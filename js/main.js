@@ -82,10 +82,10 @@ function drawMap() {
     player.x -= 0.5
   }
   if (shouldMoveDown) {
-    player.y += 0.25
+    player.y += 0.5
   }
   if (shouldMoveUp) {
-    player.y -= 0.25
+    player.y -= 0.5
   }
 
   let rowDisplayValue = ""
@@ -118,7 +118,7 @@ function drawMap() {
         }
       }
       document.getElementById("r" + i).textContent = rowDisplayValue;
-      document.getElementById("r" + i).style.fontFamily = "Courier";
+      document.getElementById("r" + i).style.fontFamily = "Nova Square";
       document.getElementById("r" + i).style.fontSize = "10px";
       rowDisplayValue = ""
   }
