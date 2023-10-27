@@ -1,12 +1,12 @@
 let map = [];
-let mapHeight = 30;
-let mapLength = 180;
+let mapHeight = Math.floor(window.innerHeight / 22);
+let mapLength = Math.floor(window.innerWidth * 9/56);
 let shouldMoveRight = false;
 let shouldMoveLeft = false;
 let shouldMoveUp = false;
 let shouldMoveDown = false;
 let nonAirTileDrawn = false
-let console = ""
+let console = "" 
 
 
 
@@ -63,10 +63,15 @@ const player = new Player(1,1, prompt("Enter Player Name"), 100, 100)
 for (let i = 0; i < mapHeight; i++) {
     map[i] = [];
     for (let j = 0; j < mapLength; j++) {
-      if (Math.floor(Math.random() * 50)) {
-      map[i][j] = "-";
+      if (Math.floor(Math.random() * 100 && map[i][j] == undefined)) {
+        map[i][j] = "-";
       } else {
-      map[i][j] = "b"
+        map[i][j] = "b"
+        //map[i + 1][j] = "b"
+        //map[i - 1][j] = "b"
+        //map[i][j] = "b"
+        map[i][j + 1] = "b"
+        map[i][j - 1] = "b"
       }
     }
 }
