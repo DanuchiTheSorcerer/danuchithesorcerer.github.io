@@ -6,6 +6,9 @@ let shouldMoveLeft = false;
 let shouldMoveUp = false;
 let shouldMoveDown = false;
 let nonAirTileDrawn = false
+let console = ""
+
+
 
 class KeyboardHandler {
   pressedKeys = []
@@ -21,20 +24,38 @@ class KeyboardHandler {
 const keyboardHandler = new KeyboardHandler()
 
 class Entity {
-  constructor(x, y) {
+  constructor(x, y, health, maxHealth) {
     this.x = x
     this.y = y
+    this.health = health
+    this.maxHealth = maxHealth
   }
 }
 
 class Player extends Entity {
-  constructor(x, y, name) {
-    super(x, y)
+  constructor(x, y, name, health, maxHealth) {
+    super(x, y, health, maxHealth)
     this.name = name
+  }
+  move() {
+    if (shouldMoveRight) {
+      player.x += 0.25
+    }
+    if (shouldMoveLeft) {
+      player.x -= 0.25
+    }
+    if (shouldMoveDown) {
+      player.y += 0.125
+    }
+    if (shouldMoveUp) {
+      player.y -= 0.125
+    }
+    if (player.x > mapLength - 1) {player.x = mapLength - 1} else if (player.x < 0) {player.x = 0}
+    if (player.y > mapHeight - 1) {player.y = mapHeight - 1} else if (player.y < 0) {player.y = 0}
   }
 }
 
-const player = new Player(4,2, prompt("Enter Player Name"))
+const player = new Player(1,1, prompt("Enter Player Name"), 100, 100)
 
 
 //Initiates the default map with sizes indicated by mapHeight and mapLength
@@ -42,7 +63,7 @@ const player = new Player(4,2, prompt("Enter Player Name"))
 for (let i = 0; i < mapHeight; i++) {
     map[i] = [];
     for (let j = 0; j < mapLength; j++) {
-      if (Math.floor(Math.random() * 30)) {
+      if (Math.floor(Math.random() * 50)) {
       map[i][j] = "-";
       } else {
       map[i][j] = "b"
@@ -75,40 +96,19 @@ function drawMap() {
 
   //keyboardHandler.pressedKeys = []
 
-  if (shouldMoveRight) {
-    player.x += 0.5
-  }
-  if (shouldMoveLeft) {
-    player.x -= 0.5
-  }
-  if (shouldMoveDown) {
-    player.y += 0.5
-  }
-  if (shouldMoveUp) {
-    player.y -= 0.5
-  }
+  player.move()
 
   let rowDisplayValue = ""
 
   for (let i = 0; i < mapHeight; i++) {
       for (let j = 0;j < mapLength; j++) {
-        for (let k = 0;k<3;k++) {
-          if (i == Math.floor(player.y - 1 + k) && j == Math.floor(player.x - 1)) {
+        if (i == Math.floor(player.y) && j == Math.floor(player.x)) {
+          if (map[i][j] == "b") {
+            rowDisplayValue = rowDisplayValue + "p"
+          } else {
             rowDisplayValue = rowDisplayValue + "P"
-            nonAirTileDrawn = true
-          } else if (i == Math.floor(player.y - 1 + k) && j == Math.floor(player.x)) {
-            rowDisplayValue = rowDisplayValue + "P"
-            nonAirTileDrawn = true
-          } else if (i == Math.floor(player.y - 1 + k) && j == Math.floor(player.x + 1)) {
-            rowDisplayValue = rowDisplayValue + "P"
-            nonAirTileDrawn = true
-          } else if (i == Math.floor(player.y - 1 + k) && j == Math.floor(player.x + 2)) {
-            rowDisplayValue = rowDisplayValue + "P"
-            nonAirTileDrawn = true
-          } else if (i == Math.floor(player.y - 1 + k) && j == Math.floor(player.x - 2)) {
-            rowDisplayValue = rowDisplayValue + "P"
-            nonAirTileDrawn = true
           }
+          nonAirTileDrawn = true
         }
         //draw 
         if (!nonAirTileDrawn) {
@@ -118,16 +118,15 @@ function drawMap() {
         }
       }
       document.getElementById("r" + i).textContent = rowDisplayValue;
-      document.getElementById("r" + i).style.fontFamily = "Nova Square";
+      document.getElementById("r" + i).style.fontFamily = "Courier";
       document.getElementById("r" + i).style.fontSize = "10px";
       rowDisplayValue = ""
   }
-
-  let tempVar = ""
-  tempVar = ""
-  for (let i = 0; i < keyboardHandler.pressedKeys.length; i++) {tempVar = tempVar + keyboardHandler.pressedKeys[i]}
-  tempVar = tempVar + " x:" + player.x + " y:" + player.y
-  document.getElementById("console").textContent = tempVar
+  console = ""
+  console = console + "\r\n x:" + Math.floor(player.x) + " y:" + Math.floor(player.y)
+  console = console + "\r\n Player Health " + player.health + "/" + player.maxHealth
+  document.getElementById("console").textContent = console
+  for (let i = 0; i < keyboardHandler.pressedKeys.length; i++) {console = console + keyboardHandler.pressedKeys[i]}
   requestAnimationFrame(drawMap)
 }
 
