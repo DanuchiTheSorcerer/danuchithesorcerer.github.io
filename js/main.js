@@ -1,6 +1,6 @@
 let map = [];
 let mapHeight = Math.floor(window.innerHeight / 22);
-let mapLength = Math.floor(window.innerWidth * 9/56);
+let mapLength = Math.floor(window.innerWidth * 11 / 112);
 let shouldMoveRight = false;
 let shouldMoveLeft = false;
 let shouldMoveUp = false;
@@ -45,13 +45,13 @@ class Player extends Entity {
       player.x -= 0.25
     }
     if (shouldMoveDown) {
-      player.y += 0.125
+      player.y += 0.25
     }
     if (shouldMoveUp) {
-      player.y -= 0.125
+      player.y -= 0.25
     }
-    if (player.x > mapLength - 1) {player.x = mapLength - 1} else if (player.x < 0) {player.x = 0}
-    if (player.y > mapHeight - 1) {player.y = mapHeight - 1} else if (player.y < 0) {player.y = 0}
+    if (player.x > mapLength - 2) {player.x = mapLength - 2} else if (player.x < 1) {player.x = 1}
+    if (player.y > mapHeight - 2) {player.y = mapHeight - 2} else if (player.y < 1) {player.y = 1}
   }
 }
 
@@ -63,21 +63,13 @@ const player = new Player(1,1, prompt("Enter Player Name"), 100, 100)
 for (let i = 0; i < mapHeight; i++) {
     map[i] = [];
     for (let j = 0; j < mapLength; j++) {
-      if (Math.floor(Math.random() * 100 && map[i][j] == undefined)) {
-        map[i][j] = "-";
-      } else {
-        map[i][j] = "b"
-        //map[i + 1][j] = "b"
-        //map[i - 1][j] = "b"
-        //map[i][j] = "b"
-        map[i][j + 1] = "b"
-        map[i][j - 1] = "b"
-      }
+      map[i][j] = "-";
     }
 }
 
-//DRAW THE MAP
+//Update function (updates every frame)
 function drawMap() {
+  //handle key input as player movement
   if (keyboardHandler.getKeys("KeyA")) {
     shouldMoveLeft = true;
   } else {
@@ -99,23 +91,21 @@ function drawMap() {
     shouldMoveUp = false;
   }
 
-  //keyboardHandler.pressedKeys = []
-
+  //update the player position
   player.move()
 
-  let rowDisplayValue = ""
-
+  //update the grid
+  let rowDisplayValue = "" 
   for (let i = 0; i < mapHeight; i++) {
       for (let j = 0;j < mapLength; j++) {
-        if (i == Math.floor(player.y) && j == Math.floor(player.x)) {
-          if (map[i][j] == "b") {
-            rowDisplayValue = rowDisplayValue + "p"
-          } else {
-            rowDisplayValue = rowDisplayValue + "P"
-          }
+        if (i == 0 || j == 0 || i == mapHeight - 1 || j == mapLength - 1) {
+          rowDisplayValue = rowDisplayValue + "0"
+          nonAirTileDrawn = true
+        } else if (i == Math.floor(player.y) && j == Math.floor(player.x)) {
+          rowDisplayValue = rowDisplayValue + "P"
           nonAirTileDrawn = true
         }
-        //draw 
+        //draw dashes if the 
         if (!nonAirTileDrawn) {
           rowDisplayValue = rowDisplayValue + map[i][j]
         } else {
@@ -123,10 +113,11 @@ function drawMap() {
         }
       }
       document.getElementById("r" + i).textContent = rowDisplayValue;
-      document.getElementById("r" + i).style.fontFamily = "Courier";
+      document.getElementById("r" + i).style.fontFamily = "SquareFont";
       document.getElementById("r" + i).style.fontSize = "10px";
       rowDisplayValue = ""
   }
+  //
   console = ""
   console = console + "\r\n x:" + Math.floor(player.x) + " y:" + Math.floor(player.y)
   console = console + "\r\n Player Health " + player.health + "/" + player.maxHealth
