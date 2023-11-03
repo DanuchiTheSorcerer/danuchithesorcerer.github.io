@@ -1,6 +1,6 @@
 let map = [];
-let mapHeight = Math.floor(window.innerHeight * 4 / 22);
-let mapLength = Math.floor(window.innerWidth * 44 / 112);
+let mapHeight = 70;
+let mapLength = 305;
 let shouldMoveRight = false;
 let shouldMoveLeft = false;
 let shouldMoveUp = false;
@@ -15,26 +15,23 @@ let canMoveRight = true
 
 
 let walls = []
+for (let i = 0;i < mapHeight;i++) {
+  walls[i]=[]
+  for (let j = 0;j < mapLength;j++) {
+    walls[i][j] = false
+  }
+}
 
 
-function wallCreator(x1, y1, x2, y2) {
-  //When using this function, make sure that x2 is larger than x1, even if your coordinate x
-  //and y's dont acutally match up. It will still work.
-  for (let i = x1;i < x2 + 1;i++) {
-    for (let j = y1;j < y2 + 1; j++) {
-      walls.push(new Wall(i, j))
+
+
+function wallEditor(x1,y1,x2,y2,bool) {
+  for (let i = y1;i < y2 + 1;i++) {
+    for (let j = x1;j < x2 + 1;j++) {
+      walls[i][j] = bool
     }
   }
 }
-
-class Wall {
-  constructor(x, y) {
-    this.x = x
-    this.y = y
-  }
-}
-
-wallCreator(5, 5, 10, 10)
 
 class KeyboardHandler {
   pressedKeys = []
@@ -56,43 +53,27 @@ class Entity {
     this.health = health
     this.maxHealth = maxHealth
   }
-}
-
-class Player extends Entity {
-  constructor(x, y, name, health, maxHealth) {
-    super(x, y, health, maxHealth)
-    this.name = name
-  }
   move() {
-    for (let i = 0;i < walls.length;i++) {
-      if (this.x - 1 == walls[i].x && this.y == walls[i].y) {
-        canMoveLeft = false
-      }
+    if (walls[this.y][this.x - 1]) {
+      canMoveLeft = false
     }
     if (canMoveLeft && shouldMoveLeft) {
       this.x -= 1
     }
-    for (let i = 0;i < walls.length;i++) {
-      //check if player can move right
-      if (this.x + 1 == walls[i].x && this.y == walls[i].y) {
-        canMoveRight = false
-      }
+    if (walls[this.y][this.x + 1]) {
+      canMoveRight = false
     }
     if (canMoveRight && shouldMoveRight) {
       this.x += 1
     }
-    for (let i = 0;i < walls.length;i++) {
-      if (this.y + 1 == walls[i].y && this.x == walls[i].x) {
-        canMoveDown = false
-      }
+    if (walls[this.y+1][this.x]) {
+      canMoveDown = false
     }
     if (canMoveDown && shouldMoveDown) {
       this.y += 1
     }
-    for (let i = 0;i < walls.length;i++) {
-      if (this.y - 1 == walls[i].y && this.x == walls[i].x) {
-        canMoveUp = false
-      }
+    if (walls[this.y - 1][this.x]) {
+      canMoveUp = false
     }
     if (canMoveUp && shouldMoveUp) {
       this.y -= 1
@@ -102,8 +83,24 @@ class Player extends Entity {
     canMoveRight = true
     canMoveLeft = true
     //clamp player movment inside of the box of 0's
-    if (player.x > mapLength - 2) {player.x = mapLength - 2} else if (player.x < 1) {player.x = 1}
-    if (player.y > mapHeight - 2) {player.y = mapHeight - 2} else if (player.y < 1) {player.y = 1}
+    if (this.x > mapLength - 2) {this.x = mapLength - 2} else if (this.x < 1) {this.x = 1}
+    if (this.y > mapHeight - 2) {this.y = mapHeight - 2} else if (this.y < 1) {this.y = 1}
+  }
+}
+
+class Monster extends Entity {
+  constructor(x, y, health, maxHealth, type) {
+    super(x, y, health, maxHealth)
+    this.type = type
+  }
+}
+
+const zombie1 = new Monster(300,30,100,100,"zombie")
+
+class Player extends Entity {
+  constructor(x, y, name, health, maxHealth) {
+    super(x, y, health, maxHealth)
+    this.name = name
   }
 }
 
@@ -143,24 +140,22 @@ function drawMap() {
   }
   //update the player position
   player.move()
+  zombie1.move()
   //update the grid
   let rowDisplayValue = "" 
   for (let i = 0; i < mapHeight; i++) {
       for (let j = 0;j < mapLength; j++) {
-        for (let k = 0;k < walls.length;k++) {
-          if (!nonAirTileDrawn && (i == 0 || j == 0 || i == mapHeight - 1 || j == mapLength - 1)) {
-            rowDisplayValue = rowDisplayValue + "0"
-            nonAirTileDrawn = true
-          } else if (!nonAirTileDrawn && i == player.y && j == player.x) {
-            rowDisplayValue = rowDisplayValue + "P"
-            nonAirTileDrawn = true
-          } else if (!nonAirTileDrawn && walls[k].x == j && walls[k].y == i) {
-            rowDisplayValue = rowDisplayValue + "#"
-            nonAirTileDrawn = true
-          }
-          //draw dashes if the 
-          
+        if (!nonAirTileDrawn && (i == 0 || j == 0 || i == mapHeight - 1 || j == mapLength - 1)) {
+          rowDisplayValue = rowDisplayValue + "0"
+          nonAirTileDrawn = true
+        } else if (!nonAirTileDrawn && i == player.y && j == player.x) {
+          rowDisplayValue = rowDisplayValue + "P"
+          nonAirTileDrawn = true
+        } else if (!nonAirTileDrawn && walls[i][j]) {
+          rowDisplayValue = rowDisplayValue + "#"
+          nonAirTileDrawn = true
         }
+        //draw dashes if the 
         if (!nonAirTileDrawn) {
           rowDisplayValue = rowDisplayValue + map[i][j]
         } else {
@@ -181,3 +176,13 @@ function drawMap() {
   requestAnimationFrame(drawMap)
 }
 
+//------------------LEVEL EDITOR---------------------//
+// NOTE
+// BECAUSE I AM LAZY AND ASCCI CHARACTERS DONT REALLY GIVE ANY RESOLUTION, THESE PARAMETERS DO NOT
+//SCALE WITH BIGGER OR SMALLER RESOLUTIONS. THIS IS CODED ON A TINY CHROMEBOOK SCREEN, SO YOU LIKELY
+//ONLY HAVE TO ZOOM IN. FOR SCREENS SOMEHOW SMALLER THAN A CHROMEBOOK SCREEN, JUST GET A BIGGER MONITOR
+
+
+wallEditor(100,1,100,68,true)
+wallEditor(100,30,100,40,false)
+wallEditor(20,1,20,20,true)
