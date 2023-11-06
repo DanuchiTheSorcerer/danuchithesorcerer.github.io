@@ -1,16 +1,9 @@
 let map = [];
 let mapHeight = 70;
 let mapLength = 305;
-let shouldMoveRight = false;
-let shouldMoveLeft = false;
-let shouldMoveUp = false;
-let shouldMoveDown = false;
 let nonAirTileDrawn = false
 let console = "" 
-let canMoveUp = true
-let canMoveDown = true
-let canMoveLeft = true
-let canMoveRight = true
+
 
 
 
@@ -52,36 +45,47 @@ class Entity {
     this.y = y
     this.health = health
     this.maxHealth = maxHealth
+    this.canMoveDown = true
+    this.canMoveUp = true
+    this.canMoveLeft = true
+    this.canMoveRight = true
+    this.shouldMoveDown = false
+    this.shouldMoveUp = false
+    this.shouldMoveRight = false
+    this.shouldMoveLeft = false
+    this.movementCooldown = 0
   }
   move() {
+    this.movementHanlder()
+
     if (walls[this.y][this.x - 1]) {
-      canMoveLeft = false
+      this.canMoveLeft = false
     }
-    if (canMoveLeft && shouldMoveLeft) {
+    if (this.canMoveLeft && this.shouldMoveLeft) {
       this.x -= 1
     }
     if (walls[this.y][this.x + 1]) {
-      canMoveRight = false
+      this.canMoveRight = false
     }
-    if (canMoveRight && shouldMoveRight) {
+    if (this.canMoveRight && this.shouldMoveRight) {
       this.x += 1
     }
     if (walls[this.y+1][this.x]) {
-      canMoveDown = false
+      this.canMoveDown = false
     }
-    if (canMoveDown && shouldMoveDown) {
+    if (this.canMoveDown && this.shouldMoveDown) {
       this.y += 1
     }
     if (walls[this.y - 1][this.x]) {
-      canMoveUp = false
+      this.canMoveUp = false
     }
-    if (canMoveUp && shouldMoveUp) {
+    if (this.canMoveUp && this.shouldMoveUp) {
       this.y -= 1
     }
-    canMoveDown = true
-    canMoveUp = true
-    canMoveRight = true
-    canMoveLeft = true
+    this.canMoveDown = true
+    this.canMoveUp = true
+    this.canMoveRight = true
+    this.canMoveLeft = true
     //clamp player movment inside of the box of 0's
     if (this.x > mapLength - 2) {this.x = mapLength - 2} else if (this.x < 1) {this.x = 1}
     if (this.y > mapHeight - 2) {this.y = mapHeight - 2} else if (this.y < 1) {this.y = 1}
@@ -93,6 +97,33 @@ class Monster extends Entity {
     super(x, y, health, maxHealth)
     this.type = type
   }
+  movementHanlder() {
+    this.canMoveUp = true
+    this.canMoveDown = true
+    this.canMoveLeft = true
+    this.canMoveRight = true
+    this.shouldMoveRight = false;
+    this.shouldMoveLeft = false;
+    this.shouldMoveUp = false;
+    this.shouldMoveDown = false;
+    if (this.movementCooldown == 0) {
+      if (this.x < player.x) {
+        this.shouldMoveRight = true
+      }
+      if (this.x > player.x) {
+        this.shouldMoveLeft = true
+      }
+      if (this.y > player.y) {
+        this.shouldMoveUp = true
+      }
+      if (this.y < player.y) {
+        this.shouldMoveDown = true
+      }
+      this.movementCooldown = 2
+    } else {
+      this.movementCooldown -= 1
+    }
+  }
 }
 
 const zombie1 = new Monster(300,30,100,100,"zombie")
@@ -101,6 +132,36 @@ class Player extends Entity {
   constructor(x, y, name, health, maxHealth) {
     super(x, y, health, maxHealth)
     this.name = name
+  }
+  movementHanlder() {
+    this.canMoveUp = true
+    this.canMoveDown = true
+    this.canMoveLeft = true
+    this.canMoveRight = true
+    this.shouldMoveRight = false;
+    this.shouldMoveLeft = false;
+    this.shouldMoveUp = false;
+    this.shouldMoveDown = false;
+    if (keyboardHandler.getKeys("KeyA")) {
+      this.shouldMoveLeft = true;
+    } else {
+      this.shouldMoveLeft = false;
+    }
+    if (keyboardHandler.getKeys("KeyD")) {
+      this.shouldMoveRight = true;
+    } else {
+      this.shouldMoveRight = false;
+    }
+    if (keyboardHandler.getKeys("KeyS")) {
+      this.shouldMoveDown = true;
+    } else {
+      this.shouldMoveDown = false;
+    }
+    if (keyboardHandler.getKeys("KeyW")) {
+      this.shouldMoveUp = true;
+    } else {
+      this.shouldMoveUp = false;
+    }
   }
 }
 
@@ -118,26 +179,7 @@ for (let i = 0; i < mapHeight; i++) {
 //Update function (updates every frame)
 function drawMap() {
   //handle key input as player movement
-  if (keyboardHandler.getKeys("KeyA")) {
-    shouldMoveLeft = true;
-  } else {
-    shouldMoveLeft = false;
-  }
-  if (keyboardHandler.getKeys("KeyD")) {
-    shouldMoveRight = true;
-  } else {
-    shouldMoveRight = false;
-  }
-  if (keyboardHandler.getKeys("KeyS")) {
-    shouldMoveDown = true;
-  } else {
-    shouldMoveDown = false;
-  }
-  if (keyboardHandler.getKeys("KeyW")) {
-    shouldMoveUp = true;
-  } else {
-    shouldMoveUp = false;
-  }
+  
   //update the player position
   player.move()
   zombie1.move()
@@ -154,6 +196,9 @@ function drawMap() {
         } else if (!nonAirTileDrawn && walls[i][j]) {
           rowDisplayValue = rowDisplayValue + "#"
           nonAirTileDrawn = true
+        } else if (!nonAirTileDrawn && i == zombie1.y && j == zombie1.x) {
+          rowDisplayValue = rowDisplayValue + "Z"
+          nonAirTileDrawn = true
         }
         //draw dashes if the 
         if (!nonAirTileDrawn) {
@@ -167,7 +212,10 @@ function drawMap() {
       document.getElementById("r" + i).style.fontSize = "2.5px";
       rowDisplayValue = ""
   }
-  //
+
+  //deal damage and heal
+  
+  //console update
   console = ""
   console = console + "\r\n x:" + player.x + " y:" + player.y
   console = console + "\r\n Player Health " + player.health + "/" + player.maxHealth
