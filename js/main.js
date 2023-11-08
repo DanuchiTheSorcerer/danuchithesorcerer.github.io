@@ -1,11 +1,8 @@
 let map = [];
 let mapHeight = 70;
-let mapLength = 305;
+let mapLength = 225;
 let nonAirTileDrawn = false
 let console = "" 
-
-
-
 
 let walls = []
 for (let i = 0;i < mapHeight;i++) {
@@ -14,9 +11,6 @@ for (let i = 0;i < mapHeight;i++) {
     walls[i][j] = false
   }
 }
-
-
-
 
 function wallEditor(x1,y1,x2,y2,bool) {
   for (let i = y1;i < y2 + 1;i++) {
@@ -40,11 +34,9 @@ class KeyboardHandler {
 const keyboardHandler = new KeyboardHandler()
 
 class Entity {
-  constructor(x, y, health, maxHealth) {
+  constructor(x, y) {
     this.x = x
     this.y = y
-    this.health = health
-    this.maxHealth = maxHealth
     this.canMoveDown = true
     this.canMoveUp = true
     this.canMoveLeft = true
@@ -54,10 +46,25 @@ class Entity {
     this.shouldMoveRight = false
     this.shouldMoveLeft = false
     this.movementCooldown = 0
+    this.abilityCooldown = 0
   }
-  move() {
+  turn() {
     this.movementHanlder()
+    //due to corner collisions being hard,collision handler also moves if needed and no collisions detected
+    this.collissionHandler()
+    
+    this.canMoveDown = true
+    this.canMoveUp = true
+    this.canMoveRight = true
+    this.canMoveLeft = true
+    //clamp player movment inside of the box of 0's
+    if (this.x > mapLength - 2) {this.x = mapLength - 2} else if (this.x < 1) {this.x = 1}
+    if (this.y > mapHeight - 2) {this.y = mapHeight - 2} else if (this.y < 1) {this.y = 1}
+    
 
+    this.abilityHandler()
+  }
+  collissionHandler() {
     if (walls[this.y][this.x - 1]) {
       this.canMoveLeft = false
     }
@@ -82,20 +89,14 @@ class Entity {
     if (this.canMoveUp && this.shouldMoveUp) {
       this.y -= 1
     }
-    this.canMoveDown = true
-    this.canMoveUp = true
-    this.canMoveRight = true
-    this.canMoveLeft = true
-    //clamp player movment inside of the box of 0's
-    if (this.x > mapLength - 2) {this.x = mapLength - 2} else if (this.x < 1) {this.x = 1}
-    if (this.y > mapHeight - 2) {this.y = mapHeight - 2} else if (this.y < 1) {this.y = 1}
+  }
+  abilityHandler() {
   }
 }
 
 class Monster extends Entity {
-  constructor(x, y, health, maxHealth, type) {
-    super(x, y, health, maxHealth)
-    this.type = type
+  constructor(x, y) {
+    super(x, y)
   }
   movementHanlder() {
     this.canMoveUp = true
@@ -119,19 +120,34 @@ class Monster extends Entity {
       if (this.y < player.y) {
         this.shouldMoveDown = true
       }
-      this.movementCooldown = 2
+      if (this.x + 1 == player.x && this.y == player.y) {
+        this.shouldMoveRight = false
+
+      }
+      if (this.x - 1 == player.x && this.y == player.y) {
+        this.shouldMoveLeft = false
+
+      }
+      if (this.y - 1 == player.y && this.x == player.x) {
+        this.shouldMoveUp = false
+
+      }
+      if (this.y + 1 == player.y && this.x == player.x) {
+        this.shouldMoveDown = false
+      }
+      this.movementCooldown = 5
     } else {
       this.movementCooldown -= 1
     }
   }
 }
 
-const zombie1 = new Monster(300,30,100,100,"zombie")
-
 class Player extends Entity {
   constructor(x, y, name, health, maxHealth) {
-    super(x, y, health, maxHealth)
+    super(x, y)
     this.name = name
+    this.health = health
+    this.maxHealth = maxHealth
   }
   movementHanlder() {
     this.canMoveUp = true
@@ -142,47 +158,42 @@ class Player extends Entity {
     this.shouldMoveLeft = false;
     this.shouldMoveUp = false;
     this.shouldMoveDown = false;
-    if (keyboardHandler.getKeys("KeyA")) {
-      this.shouldMoveLeft = true;
+    if (this.movementCooldown == 0) {
+      if (keyboardHandler.getKeys("KeyA")) {
+        this.shouldMoveLeft = true;
+      } else {
+        this.shouldMoveLeft = false;
+      }
+      if (keyboardHandler.getKeys("KeyD")) {
+        this.shouldMoveRight = true;
+      } else {
+        this.shouldMoveRight = false;
+      }
+      if (keyboardHandler.getKeys("KeyS")) {
+        this.shouldMoveDown = true;
+      } else {
+        this.shouldMoveDown = false;
+      }
+      if (keyboardHandler.getKeys("KeyW")) {
+        this.shouldMoveUp = true;
+      } else {
+        this.shouldMoveUp = false;
+      }
+      this.movementCooldown = 2
     } else {
-      this.shouldMoveLeft = false;
-    }
-    if (keyboardHandler.getKeys("KeyD")) {
-      this.shouldMoveRight = true;
-    } else {
-      this.shouldMoveRight = false;
-    }
-    if (keyboardHandler.getKeys("KeyS")) {
-      this.shouldMoveDown = true;
-    } else {
-      this.shouldMoveDown = false;
-    }
-    if (keyboardHandler.getKeys("KeyW")) {
-      this.shouldMoveUp = true;
-    } else {
-      this.shouldMoveUp = false;
+      this.movementCooldown -= 1
     }
   }
 }
 
 const player = new Player(1,1, prompt("Enter Player Name"), 100, 100)
 
-
-//Initiates the default map with sizes indicated by mapHeight and mapLength
-for (let i = 0; i < mapHeight; i++) {
-    map[i] = [];
-    for (let j = 0; j < mapLength; j++) {
-      map[i][j] = "-";
-    }
-}
-
 //Update function (updates every frame)
 function drawMap() {
   //handle key input as player movement
   
   //update the player position
-  player.move()
-  zombie1.move()
+  player.turn()
   //update the grid
   let rowDisplayValue = "" 
   for (let i = 0; i < mapHeight; i++) {
@@ -196,20 +207,17 @@ function drawMap() {
         } else if (!nonAirTileDrawn && walls[i][j]) {
           rowDisplayValue = rowDisplayValue + "#"
           nonAirTileDrawn = true
-        } else if (!nonAirTileDrawn && i == zombie1.y && j == zombie1.x) {
-          rowDisplayValue = rowDisplayValue + "Z"
-          nonAirTileDrawn = true
         }
         //draw dashes if the 
         if (!nonAirTileDrawn) {
-          rowDisplayValue = rowDisplayValue + map[i][j]
+          rowDisplayValue = rowDisplayValue + "-"
         } else {
           nonAirTileDrawn = false
         }
       }
       document.getElementById("r" + i).textContent = rowDisplayValue;
       document.getElementById("r" + i).style.fontFamily = "SquareFont";
-      document.getElementById("r" + i).style.fontSize = "2.5px";
+      document.getElementById("r" + i).style.fontSize = "6px";
       rowDisplayValue = ""
   }
 
@@ -232,5 +240,5 @@ function drawMap() {
 
 
 wallEditor(100,1,100,68,true)
-wallEditor(100,30,100,40,false)
+wallEditor(100,30,100,35,false)
 wallEditor(20,1,20,20,true)
