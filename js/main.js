@@ -1,6 +1,5 @@
-let map = [];
-let mapHeight = 70;
-let mapLength = 225;
+let mapHeight = 73;
+let mapLength = 226;
 let nonAirTileDrawn = false
 let console = "" 
 
@@ -94,6 +93,8 @@ class Entity {
   }
 }
 
+
+//idk if im gonna have enemies tho
 class Monster extends Entity {
   constructor(x, y) {
     super(x, y)
@@ -186,7 +187,7 @@ class Player extends Entity {
   }
 }
 
-const player = new Player(1,1, prompt("Enter Player Name"), 100, 100)
+const player = new Player(2,2, prompt("Enter Player Name"), 100, 100)
 
 //Update function (updates every frame)
 function drawMap() {
@@ -210,7 +211,7 @@ function drawMap() {
         }
         //draw dashes if the 
         if (!nonAirTileDrawn) {
-          rowDisplayValue = rowDisplayValue + "-"
+          rowDisplayValue = rowDisplayValue + "."
         } else {
           nonAirTileDrawn = false
         }
@@ -238,7 +239,14 @@ function drawMap() {
 //SCALE WITH BIGGER OR SMALLER RESOLUTIONS. THIS IS CODED ON A TINY CHROMEBOOK SCREEN, SO YOU LIKELY
 //ONLY HAVE TO ZOOM IN. FOR SCREENS SOMEHOW SMALLER THAN A CHROMEBOOK SCREEN, JUST GET A BIGGER MONITOR
 
+for (let i = 1;i < 25;i++) {
+  wallEditor(i * 9, 1, i * 9, 71, true)
+}
 
-wallEditor(100,1,100,68,true)
-wallEditor(100,30,100,35,false)
-wallEditor(20,1,20,20,true)
+for (let i = 1; i < 8; i++) {
+  wallEditor(1, i * 9, 224, i * 9, true)
+}
+
+
+//RANDOM GENERATED MAP LETS GOOOOO, this probably wont work
+
