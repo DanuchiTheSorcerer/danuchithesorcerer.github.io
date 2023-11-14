@@ -93,62 +93,10 @@ class Entity {
   }
 }
 
-
-//idk if im gonna have enemies tho
-class Monster extends Entity {
-  constructor(x, y) {
-    super(x, y)
-  }
-  movementHanlder() {
-    this.canMoveUp = true
-    this.canMoveDown = true
-    this.canMoveLeft = true
-    this.canMoveRight = true
-    this.shouldMoveRight = false;
-    this.shouldMoveLeft = false;
-    this.shouldMoveUp = false;
-    this.shouldMoveDown = false;
-    if (this.movementCooldown == 0) {
-      if (this.x < player.x) {
-        this.shouldMoveRight = true
-      }
-      if (this.x > player.x) {
-        this.shouldMoveLeft = true
-      }
-      if (this.y > player.y) {
-        this.shouldMoveUp = true
-      }
-      if (this.y < player.y) {
-        this.shouldMoveDown = true
-      }
-      if (this.x + 1 == player.x && this.y == player.y) {
-        this.shouldMoveRight = false
-
-      }
-      if (this.x - 1 == player.x && this.y == player.y) {
-        this.shouldMoveLeft = false
-
-      }
-      if (this.y - 1 == player.y && this.x == player.x) {
-        this.shouldMoveUp = false
-
-      }
-      if (this.y + 1 == player.y && this.x == player.x) {
-        this.shouldMoveDown = false
-      }
-      this.movementCooldown = 5
-    } else {
-      this.movementCooldown -= 1
-    }
-  }
-}
-
 class Player extends Entity {
-  constructor(x, y, name, health, maxHealth) {
+  constructor(x, y, name) {
     super(x, y)
     this.name = name
-    this.health = health
-    this.maxHealth = maxHealth
   }
   movementHanlder() {
     this.canMoveUp = true
@@ -187,7 +135,7 @@ class Player extends Entity {
   }
 }
 
-const player = new Player(2,2, prompt("Enter Player Name"), 100, 100)
+const player = new Player(2,2, prompt("Enter Player Name"))
 
 //Update function (updates every frame)
 function drawMap() {
@@ -205,7 +153,7 @@ function drawMap() {
         } else if (!nonAirTileDrawn && i == player.y && j == player.x) {
           rowDisplayValue = rowDisplayValue + "P"
           nonAirTileDrawn = true
-        } else if (!nonAirTileDrawn && walls[i][j]) {
+        } else if (!nonAirTileDrawn && walls[i][j] && Math.sqrt(Math.pow(i - player.y,2)+  Math.pow(j - player.x,2)) <=9) {
           rowDisplayValue = rowDisplayValue + "#"
           nonAirTileDrawn = true
         }
@@ -222,12 +170,10 @@ function drawMap() {
       rowDisplayValue = ""
   }
 
-  //deal damage and heal
   
   //console update
   console = ""
   console = console + "\r\n x:" + player.x + " y:" + player.y
-  console = console + "\r\n Player Health " + player.health + "/" + player.maxHealth
   document.getElementById("console").textContent = console
   for (let i = 0; i < keyboardHandler.pressedKeys.length; i++) {console = console + keyboardHandler.pressedKeys[i]}
   requestAnimationFrame(drawMap)
@@ -249,4 +195,117 @@ for (let i = 1; i < 8; i++) {
 
 
 //RANDOM GENERATED MAP LETS GOOOOO, this probably wont work
+class mazeCell {
+  constructor() {
+    this.up = false
+    this.down = false
+    this.right = false
+    this.left = false
+  }
+}
 
+function randomGeneration() {
+  var randomMaze = []
+  for (let i = 0;i < 26;i++) {
+    randomMaze[i] = []
+    for (let j = 0;j < 8;j++) {
+      randomMaze[i][j] = new mazeCell()
+    }
+  }
+  //generate path starting at 0 , 0
+  generatePath(0,0,randomMaze)
+  //now clear the walls where there arent connections
+  for (let i = 0;i < 26;i++) {
+    for (let j = 0;j < 8;j++) {
+      if (randomMaze[i][j].right) {
+        wallEditor(9 + 9 * i, 1 + 9 * j, 9 + 9 * i, 8 + 9 * j)
+      }
+      if (randomMaze[i][j].down) {
+        wallEditor(1 + 9 * i, 9 + 9 * j, 8 + 9 * i, 9 + 9 * j)
+      }
+    }
+  }
+}
+
+function generatePath(x,y,randomMaze) {
+  var freeCells = []
+  if (x + 1 >= 0 && x + 1 <= 24) {
+    if (!randomMaze[x + 1][y].up && !randomMaze[x + 1][y].right && !randomMaze[x + 1][y].down && !randomMaze[x + 1][y].left) {
+      freeCells.push({xVar:1,yVar:0})
+    }
+  }
+  if (x - 1 >=0 && x - 1 <= 24) {
+    if (!randomMaze[x - 1][y].up && !randomMaze[x - 1][y].right && !randomMaze[x - 1][y].down && !randomMaze[x - 1][y].left) {
+      freeCells.push({xVar:-1,yVar:0})
+    }
+  }
+  if (y + 1 >= 0 && y + 1 <= 7) {
+    if (!randomMaze[x][y + 1].up && !randomMaze[x][y + 1].right && !randomMaze[x][y + 1].down && !randomMaze[x][y + 1].left) {
+      freeCells.push({xVar:0,yVar:1})
+    }
+  }
+  if (y - 1 >= 0 && y - 1 <= 7) {
+    if (!randomMaze[x][y - 1].up && !randomMaze[x][y - 1].right && !randomMaze[x][y - 1].down && !randomMaze[x][y - 1].left) {
+      freeCells.push({xVar:0,yVar:-1})
+    }
+  }
+  if (freeCells.length == 0) {
+    freeCells = []
+    //alert("Dead end")
+    let huntedCell = findAvailibleHuntCell(randomMaze)
+    //alert(huntedCell.x + " " + huntedCell.y)
+    
+    if (huntedCell !== "finished") {
+      //alert("failed")
+      generatePath(huntedCell.x,huntedCell.y,randomMaze)
+    }
+  } else {
+    let randomlySelectedSquare = freeCells[Math.floor(Math.random() * freeCells.length)]
+    freeCells = []
+    if (randomlySelectedSquare.xVar == 1) {
+      randomMaze[x][y].right = true
+      randomMaze[x + randomlySelectedSquare.xVar][y + randomlySelectedSquare.yVar].left = true
+    } else if (randomlySelectedSquare.xVar == -1) {
+      randomMaze[x][y].left = true
+      randomMaze[x + randomlySelectedSquare.xVar][y + randomlySelectedSquare.yVar].right = true
+    } else if (randomlySelectedSquare.yVar == 1) {
+      randomMaze[x][y].down = true
+      randomMaze[x + randomlySelectedSquare.xVar][y + randomlySelectedSquare.yVar].up = true
+    } else if (randomlySelectedSquare.yVar == -1) {
+      randomMaze[x][y].up = true
+      randomMaze[x + randomlySelectedSquare.xVar][y + randomlySelectedSquare.yVar].down = true
+    }
+    //alert((x + randomlySelectedSquare.xVar) + " " + (y + randomlySelectedSquare.yVar))
+    generatePath(x + randomlySelectedSquare.xVar,y + randomlySelectedSquare.yVar,randomMaze)
+  }
+}
+
+function findAvailibleHuntCell(randomMaze) {
+  for (let i = 0;i < 26;i++) {
+    for (let j = 0;j < 8;j++) {
+      //alert(i + " " + j)
+      if (i + 1 >= 0 && i + 1 <= 24) {
+        if (!randomMaze[i + 1][j].up && !randomMaze[i + 1][j].right && !randomMaze[i + 1][j].down && !randomMaze[i + 1][j].left) {
+          return {x:i,y:j}
+        }
+      }
+      if (i - 1 >= 0 && i - 1 <= 24) {
+        if (!randomMaze[i - 1][j].up && !randomMaze[i - 1][j].right && !randomMaze[i - 1][j].down && !randomMaze[i - 1][j].left) {
+          return {x:i,y:j}
+        }
+      }
+      if (j - 1 >= 0 && j - 1 <= 7) {
+        if (!randomMaze[i][j - 1].up && !randomMaze[i][j - 1].right && !randomMaze[i][j - 1].down && !randomMaze[i][j - 1].left) {
+          return {x:i,y:j}
+        }
+      }
+      if (j + 1 >= 0 && j + 1 <=7) {
+        if (!randomMaze[i][j + 1].up && !randomMaze[i][j + 1].right && !randomMaze[i][j + 1].down && !randomMaze[i][j + 1].left) {
+          return {x:i,y:j}
+        }
+      }
+    }
+  }
+  //alert("finishing")
+  return "finished"
+}
