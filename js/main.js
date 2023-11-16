@@ -1,7 +1,10 @@
-let mapHeight = 73;
-let mapLength = 226;
+let mapHeight = 73;  //36
+let mapLength = 226;  //112
 let nonAirTileDrawn = false
 let console = "" 
+let chat1 = ""
+let chat2 = ""
+let chat3 = ""
 
 let walls = []
 for (let i = 0;i < mapHeight;i++) {
@@ -56,9 +59,6 @@ class Entity {
     this.canMoveUp = true
     this.canMoveRight = true
     this.canMoveLeft = true
-    //clamp player movment inside of the box of 0's
-    if (this.x > mapLength - 2) {this.x = mapLength - 2} else if (this.x < 1) {this.x = 1}
-    if (this.y > mapHeight - 2) {this.y = mapHeight - 2} else if (this.y < 1) {this.y = 1}
     
 
     this.abilityHandler()
@@ -89,14 +89,14 @@ class Entity {
       this.y -= 1
     }
   }
-  abilityHandler() {
-  }
 }
 
 class Player extends Entity {
   constructor(x, y, name) {
     super(x, y)
     this.name = name
+    this.lanterFuel = 2000
+    this.health = 30
   }
   movementHanlder() {
     this.canMoveUp = true
@@ -128,9 +128,28 @@ class Player extends Entity {
       } else {
         this.shouldMoveUp = false;
       }
-      this.movementCooldown = 2
+      this.movementCooldown = Math.floor(10 * Math.pow(0.95, this.lanterFuel))
     } else {
       this.movementCooldown -= 1
+    }
+  }
+  abilityHandler() {
+    if (this.x < 7 && this.x > 2 && this.y < 7 && this.y > 2) {
+      this.lanterFuel += .01
+      this.health += 0.01
+    } else {
+      this.lanterFuel -= .01
+    }
+    if (this.lanterFuel < 3.5) {
+      this.lanterFuel = 4
+      this.health -= 1
+    } else if (this.lanterFuel > 2000) {
+      this.lanterFuel = 2000
+    }
+    if (this.health < 0) {
+      this.health = 0
+    } else if (this.health > 30) {
+      this.health = 30
     }
   }
 }
@@ -153,12 +172,20 @@ function drawMap() {
         } else if (!nonAirTileDrawn && i == player.y && j == player.x) {
           rowDisplayValue = rowDisplayValue + "P"
           nonAirTileDrawn = true
-        } else if (!nonAirTileDrawn && walls[i][j] && Math.sqrt(Math.pow(i - player.y,2)+  Math.pow(j - player.x,2)) <=9) {
+        } else if (!nonAirTileDrawn && walls[i][j] && Math.sqrt(Math.pow(i - player.y,2)+  Math.pow(j - player.x,2)) <= player.lanterFuel) {
           rowDisplayValue = rowDisplayValue + "#"
+          nonAirTileDrawn = true
+        } else if (!nonAirTileDrawn && i < 7 && i > 2 && j < 7 && j > 2) {
+          rowDisplayValue = rowDisplayValue + "C"
+          nonAirTileDrawn = true
+        } else if (!nonAirTileDrawn && i > 38 && i < 43 && j > 110 && j < 115) {
+          rowDisplayValue = rowDisplayValue + "C"
           nonAirTileDrawn = true
         }
         //draw dashes if the 
-        if (!nonAirTileDrawn) {
+        if (!nonAirTileDrawn && Math.sqrt(Math.pow(i - player.y,2)+  Math.pow(j - player.x,2)) >= player.lanterFuel) {
+          rowDisplayValue = rowDisplayValue + "o"
+        } else if (!nonAirTileDrawn && Math.sqrt(Math.pow(i - player.y,2)+  Math.pow(j - player.x,2)) <= player.lanterFuel) {
           rowDisplayValue = rowDisplayValue + "."
         } else {
           nonAirTileDrawn = false
@@ -173,10 +200,20 @@ function drawMap() {
   
   //console update
   console = ""
-  console = console + "\r\n x:" + player.x + " y:" + player.y
+  console = console + "Health: " + Math.floor(player.health)
   document.getElementById("console").textContent = console
   for (let i = 0; i < keyboardHandler.pressedKeys.length; i++) {console = console + keyboardHandler.pressedKeys[i]}
+  document.getElementById("chat1").textContent = chat1
+  document.getElementById("chat2").textContent = chat2
+  document.getElementById("chat3").textContent = chat3
   requestAnimationFrame(drawMap)
+}
+
+
+function chatMessageAdder(message) {
+  chat3 = chat2
+  chat2 = chat1
+  chat1 = message
 }
 
 //------------------LEVEL EDITOR---------------------//
@@ -185,13 +222,6 @@ function drawMap() {
 //SCALE WITH BIGGER OR SMALLER RESOLUTIONS. THIS IS CODED ON A TINY CHROMEBOOK SCREEN, SO YOU LIKELY
 //ONLY HAVE TO ZOOM IN. FOR SCREENS SOMEHOW SMALLER THAN A CHROMEBOOK SCREEN, JUST GET A BIGGER MONITOR
 
-for (let i = 1;i < 25;i++) {
-  wallEditor(i * 9, 1, i * 9, 71, true)
-}
-
-for (let i = 1; i < 8; i++) {
-  wallEditor(1, i * 9, 224, i * 9, true)
-}
 
 
 //RANDOM GENERATED MAP LETS GOOOOO, this probably wont work
@@ -205,6 +235,19 @@ class mazeCell {
 }
 
 function randomGeneration() {
+
+  for (let i = 1;i < 25;i++) {
+    wallEditor(i * 9, 1, i * 9, 71, true)
+  }
+
+  for (let i = 1; i < 8; i++) {
+    wallEditor(1, i * 9, 224, i * 9, true)
+  }
+
+  wallEditor(0, 0, 0, 72, true)
+  wallEditor(225, 0, 225, 72, true)
+  wallEditor(0, 0, 225, 0, true)
+  wallEditor(0, 72, 225, 72, true)
   var randomMaze = []
   for (let i = 0;i < 26;i++) {
     randomMaze[i] = []
@@ -225,6 +268,7 @@ function randomGeneration() {
       }
     }
   }
+  chatMessageAdder("Maze Randomly Generated!")
 }
 
 function generatePath(x,y,randomMaze) {
