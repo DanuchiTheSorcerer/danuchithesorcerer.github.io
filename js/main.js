@@ -95,7 +95,7 @@ class Player extends Entity {
   constructor(x, y, name) {
     super(x, y)
     this.name = name
-    this.lanterFuel = 2000
+    this.lanterFuel = 20
     this.health = 30
   }
   movementHanlder() {
@@ -137,14 +137,17 @@ class Player extends Entity {
     if (this.x < 7 && this.x > 2 && this.y < 7 && this.y > 2) {
       this.lanterFuel += .01
       this.health += 0.01
+    } else if (this.y > 38 && this.y < 43 && this.x > 110 && this.x < 115) {
+      this.lanterFuel += .01
+      this.health += 0.01
     } else {
       this.lanterFuel -= .01
     }
     if (this.lanterFuel < 3.5) {
       this.lanterFuel = 4
       this.health -= 1
-    } else if (this.lanterFuel > 2000) {
-      this.lanterFuel = 2000
+    } else if (this.lanterFuel > 20) {
+      this.lanterFuel = 20
     }
     if (this.health < 0) {
       this.health = 0
