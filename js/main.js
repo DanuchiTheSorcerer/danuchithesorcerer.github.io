@@ -5,6 +5,24 @@ let console = ""
 let chat1 = ""
 let chat2 = ""
 let chat3 = ""
+let startTime
+
+
+let oilPits = []
+for (let i = 0;i < mapHeight; i++) {
+  oilPits[i] = []
+  for (let j = 0; j < mapLength;j++) {
+    oilPits[i][j] = false
+  }
+}
+
+function oilCreator(x, y) {
+  for (let i = y * 9 + 3;i < y * 9 + 7;i++) {
+    for (let j = x * 9 + 3;j < x * 9 + 7;j++) {
+      oilPits[i][j] = true
+    }
+  }
+}
 
 let walls = []
 for (let i = 0;i < mapHeight;i++) {
@@ -92,9 +110,8 @@ class Entity {
 }
 
 class Player extends Entity {
-  constructor(x, y, name) {
+  constructor(x, y) {
     super(x, y)
-    this.name = name
     this.lanterFuel = 20
     this.health = 30
   }
@@ -134,10 +151,7 @@ class Player extends Entity {
     }
   }
   abilityHandler() {
-    if (this.x < 7 && this.x > 2 && this.y < 7 && this.y > 2) {
-      this.lanterFuel += .01
-      this.health += 0.01
-    } else if (this.y > 38 && this.y < 43 && this.x > 110 && this.x < 115) {
+    if (oilPits[this.y][this.x]) {
       this.lanterFuel += .01
       this.health += 0.01
     } else {
@@ -150,14 +164,28 @@ class Player extends Entity {
       this.lanterFuel = 20
     }
     if (this.health < 0) {
-      this.health = 0
+      let timer = 2000
+      window.location = "title.html"
+      while (timer) {
+        timer -= 1
+      }
     } else if (this.health > 30) {
       this.health = 30
+    }
+    if (this.health > 20) {
+      document.getElementById("body").style.backgroundColor = "#682ca8"
+    } else if (this.health <= 20 && this.health > 10) {
+      document.getElementById("body").style.backgroundColor = "#3f146e"
+    } else {
+      document.getElementById("body").style.backgroundColor = "#280b47"
     }
   }
 }
 
-const player = new Player(2,2, prompt("Enter Player Name"))
+const player = new Player(2,2)
+
+
+
 
 //Update function (updates every frame)
 function drawMap() {
@@ -178,11 +206,8 @@ function drawMap() {
         } else if (!nonAirTileDrawn && walls[i][j] && Math.sqrt(Math.pow(i - player.y,2)+  Math.pow(j - player.x,2)) <= player.lanterFuel) {
           rowDisplayValue = rowDisplayValue + "#"
           nonAirTileDrawn = true
-        } else if (!nonAirTileDrawn && i < 7 && i > 2 && j < 7 && j > 2) {
-          rowDisplayValue = rowDisplayValue + "C"
-          nonAirTileDrawn = true
-        } else if (!nonAirTileDrawn && i > 38 && i < 43 && j > 110 && j < 115) {
-          rowDisplayValue = rowDisplayValue + "C"
+        } else if (!nonAirTileDrawn && oilPits[i][j] && Math.sqrt(Math.pow(i - player.y,2)+  Math.pow(j - player.x,2)) <= player.lanterFuel){
+          rowDisplayValue = rowDisplayValue + "O"
           nonAirTileDrawn = true
         }
         //draw dashes if the 
@@ -203,7 +228,8 @@ function drawMap() {
   
   //console update
   console = ""
-  console = console + "Health: " + Math.floor(player.health)
+  console = console + "Health: " + Math.floor(player.health) + "/30"
+  console = console + "Time Spent: " + Math.floor((new Date() - startTime) / 1000)
   document.getElementById("console").textContent = console
   for (let i = 0; i < keyboardHandler.pressedKeys.length; i++) {console = console + keyboardHandler.pressedKeys[i]}
   document.getElementById("chat1").textContent = chat1
@@ -272,9 +298,20 @@ function randomGeneration() {
     }
   }
   chatMessageAdder("Maze Randomly Generated!")
+  let numberOfPits = 8
+  for (let i = 0;i < 25; i++) {
+    for (let j = 0;j < 8;j++) {
+      if (Math.floor(Math.random() * (200 / numberOfPits)) == 0) {
+        numberOfPits -= 1
+        oilCreator(i, j)
+      }
+    }
+  }
+  chatMessageAdder("Oil Pits Spawned!")
 }
 
 function generatePath(x,y,randomMaze) {
+  startTime = new Date()
   var freeCells = []
   if (x + 1 >= 0 && x + 1 <= 24) {
     if (!randomMaze[x + 1][y].up && !randomMaze[x + 1][y].right && !randomMaze[x + 1][y].down && !randomMaze[x + 1][y].left) {
