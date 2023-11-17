@@ -179,6 +179,9 @@ class Player extends Entity {
     } else {
       document.getElementById("body").style.backgroundColor = "#280b47"
     }
+    if (player.x > 216 && player.y > 63) {
+      alert("You completed the maze in " + Math.floor((new Date() - startTime) / 1000))
+    }
   }
 }
 
@@ -205,6 +208,9 @@ function drawMap() {
           nonAirTileDrawn = true
         } else if (!nonAirTileDrawn && walls[i][j] && Math.sqrt(Math.pow(i - player.y,2)+  Math.pow(j - player.x,2)) <= player.lanterFuel) {
           rowDisplayValue = rowDisplayValue + "#"
+          nonAirTileDrawn = true
+        } else if (!nonAirTileDrawn && i > 63 && j > 216) {
+          rowDisplayValue = rowDisplayValue + "E"
           nonAirTileDrawn = true
         } else if (!nonAirTileDrawn && oilPits[i][j] && Math.sqrt(Math.pow(i - player.y,2)+  Math.pow(j - player.x,2)) <= player.lanterFuel){
           rowDisplayValue = rowDisplayValue + "O"
@@ -298,7 +304,7 @@ function randomGeneration() {
     }
   }
   chatMessageAdder("Maze Randomly Generated!")
-  let numberOfPits = 8
+  let numberOfPits = 200
   for (let i = 0;i < 25; i++) {
     for (let j = 0;j < 8;j++) {
       if (Math.floor(Math.random() * (200 / numberOfPits)) == 0) {
