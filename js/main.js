@@ -6,6 +6,7 @@ let chat1 = ""
 let chat2 = ""
 let chat3 = ""
 let startTime
+let gameEnded = false
 
 
 let oilPits = []
@@ -163,12 +164,11 @@ class Player extends Entity {
     } else if (this.lanterFuel > 20) {
       this.lanterFuel = 20
     }
-    if (this.health < 0) {
-      let timer = 2000
+    if (this.health < 0 && !gameEnded) {
+      
       window.location = "title.html"
-      while (timer) {
-        timer -= 1
-      }
+      alert("YOU DIED L")
+      gameEnded = true
     } else if (this.health > 30) {
       this.health = 30
     }
@@ -179,8 +179,10 @@ class Player extends Entity {
     } else {
       document.getElementById("body").style.backgroundColor = "#280b47"
     }
-    if (player.x > 216 && player.y > 63) {
-      alert("You completed the maze in " + Math.floor((new Date() - startTime) / 1000))
+    if (player.x > 216 && player.y > 63 && !gameEnded) {
+      alert("You completed the maze in " + Math.floor((new Date() - startTime) / 1000) + " seconds!")
+      window.location = "title.html"
+      gameEnded = true
     }
   }
 }
@@ -304,7 +306,7 @@ function randomGeneration() {
     }
   }
   chatMessageAdder("Maze Randomly Generated!")
-  let numberOfPits = 200
+  let numberOfPits = 5
   for (let i = 0;i < 25; i++) {
     for (let j = 0;j < 8;j++) {
       if (Math.floor(Math.random() * (200 / numberOfPits)) == 0) {
