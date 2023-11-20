@@ -18,8 +18,8 @@ for (let i = 0;i < mapHeight; i++) {
 }
 
 function oilCreator(x, y) {
-  for (let i = y * 9 + 3;i < y * 9 + 7;i++) {
-    for (let j = x * 9 + 3;j < x * 9 + 7;j++) {
+  for (let i = y * 9 + 1;i < y * 9 + 9;i++) {
+    for (let j = x * 9 + 1;j < x * 9 + 9;j++) {
       oilPits[i][j] = true
     }
   }
@@ -113,7 +113,6 @@ class Entity {
 class Monster extends Entity {
   constructor(x, y) {
     super(x, y)
-    this.speed = 10
   }
   movementHandler() {
     this.canMoveUp = true
@@ -124,39 +123,60 @@ class Monster extends Entity {
     this.shouldMoveLeft = false;
     this.shouldMoveUp = false;
     this.shouldMoveDown = false;
-    if (this.movementCooldown == 0) {
-      if (keyboardHandler.getKeys("KeyA")) {
-        this.shouldMoveLeft = true;
-      } else {
-        this.shouldMoveLeft = false;
+    if (this.movementCooldown <= 0) {
+      if (!(this.x - 1 == player.x && this.y == player.y) && !oilPits[this.y][this.x - 1]) {
+        if (this.x > player.x) {
+          this.shouldMoveLeft = true;
+        } else {
+          this.shouldMoveLeft = false;
+        }
+      } else if (this.y - 1 == player.y && this.x == player.x)  {
+        player.health -= 1
       }
-      if (keyboardHandler.getKeys("KeyD")) {
-        this.shouldMoveRight = true;
-      } else {
-        this.shouldMoveRight = false;
+      if (!(this.x + 1 == player.x && this.y == player.y) && !oilPits[this.y][this.x + 1]) {
+        if (this.x < player.x) {
+          this.shouldMoveRight = true;
+        } else {
+          this.shouldMoveRight = false;
+        }
+      } else if (this.y - 1 == player.y && this.x == player.x)  {
+        player.health -= 1
       }
-      if (keyboardHandler.getKeys("KeyS")) {
-        this.shouldMoveDown = true;
-      } else {
-        this.shouldMoveDown = false;
+      if (!(this.y + 1 == player.y && this.x == player.x) && !oilPits[this.y + 1][this.x]) {
+        if (this.y < player.y) {
+          this.shouldMoveDown = true;
+        } else {
+          this.shouldMoveDown = false;
+        }
+      } else if (this.y - 1 == player.y && this.x == player.x) {
+        player.health -= 1
       }
-      if (keyboardHandler.getKeys("KeyW")) {
-        this.shouldMoveUp = true;
-      } else {
-        this.shouldMoveUp = false;
+      if (!(this.y - 1 == player.y && this.x == player.x) && !oilPits[this.y - 1][this.x]) {
+        if (this.y > player.y) {
+          this.shouldMoveUp = true;
+        } else {
+          this.shouldMoveUp = false;
+        }
+      } else if (this.y - 1 == player.y && this.x == player.x) {
+        player.health -= 1
       }
-      this.movementCooldown = Math.floor(10 * Math.pow(0.95, this.lanterFuel))
+      this.movementCooldown += 8.5
     } else {
       this.movementCooldown -= 1
     }
   }
+  abilityHandler() {
+
+  }
 }
+
+const monster = new Monster(112, 36)
 
 class Player extends Entity {
   constructor(x, y) {
     super(x, y)
     this.lanterFuel = 20
-    this.health = 30
+    this.health = 10
   }
   movementHandler() {
     this.canMoveUp = true
@@ -188,7 +208,7 @@ class Player extends Entity {
       } else {
         this.shouldMoveUp = false;
       }
-      this.movementCooldown = Math.floor(10 * Math.pow(0.95, this.lanterFuel))
+      this.movementCooldown = Math.floor(12 * Math.pow(0.95, this.lanterFuel))
     } else {
       this.movementCooldown -= 1
     }
@@ -198,11 +218,14 @@ class Player extends Entity {
       this.lanterFuel += .01
       this.health += 0.01
     } else {
-      this.lanterFuel -= .009
+      this.lanterFuel -= .005
     }
     if (this.lanterFuel < 3.5) {
       this.lanterFuel = 4
-      this.health -= 1
+      if (!oilPits[this.y][this.x] && Math.floor((new Date() - startTime) / 1000) % 10 == 0) {
+        monster.x = this.x
+        monster.y = this.y
+      }
     } else if (this.lanterFuel > 20) {
       this.lanterFuel = 20
     }
@@ -211,12 +234,12 @@ class Player extends Entity {
       window.location = "title.html"
       alert("YOU DIED L")
       gameEnded = true
-    } else if (this.health > 30) {
-      this.health = 30
+    } else if (this.health > 10) {
+      this.health = 10
     }
-    if (this.health > 20) {
+    if (this.health > 7) {
       document.getElementById("body").style.backgroundColor = "#682ca8"
-    } else if (this.health <= 20 && this.health > 10) {
+    } else if (this.health <= 6 && this.health > 3) {
       document.getElementById("body").style.backgroundColor = "#3f146e"
     } else {
       document.getElementById("body").style.backgroundColor = "#280b47"
@@ -240,6 +263,7 @@ function drawMap() {
   
   //update the player position
   player.turn()
+  monster.turn()
   //update the grid
   let rowDisplayValue = "" 
   for (let i = 0; i < mapHeight; i++) {
@@ -255,6 +279,9 @@ function drawMap() {
           nonAirTileDrawn = true
         } else if (!nonAirTileDrawn && i > 63 && j > 216) {
           rowDisplayValue = rowDisplayValue + "E"
+          nonAirTileDrawn = true
+        } else if (!nonAirTileDrawn && i == monster.y && j == monster.x && Math.sqrt(Math.pow(i - player.y,2)+  Math.pow(j - player.x,2)) <= player.lanterFuel) {
+          rowDisplayValue = rowDisplayValue + "M"
           nonAirTileDrawn = true
         } else if (!nonAirTileDrawn && oilPits[i][j] && Math.sqrt(Math.pow(i - player.y,2)+  Math.pow(j - player.x,2)) <= player.lanterFuel){
           rowDisplayValue = rowDisplayValue + "O"
@@ -278,7 +305,7 @@ function drawMap() {
   
   //console update
   console = ""
-  console = console + "Health: " + Math.floor(player.health) + "/30 "
+  console = console + "Health: " + Math.floor(player.health) + "/10 "
   console = console + "Time Spent: " + Math.floor((new Date() - startTime) / 1000)
   document.getElementById("console").textContent = console
   for (let i = 0; i < keyboardHandler.pressedKeys.length; i++) {console = console + keyboardHandler.pressedKeys[i]}
@@ -351,7 +378,7 @@ function randomGeneration() {
   let numberOfPits = 5
   for (let i = 0;i < 25; i++) {
     for (let j = 0;j < 8;j++) {
-      if (Math.floor(Math.random() * (200 / numberOfPits)) == 0) {
+      if (Math.floor(Math.random() * ((200 -(i * 9 + j + 1)) / numberOfPits)) == 0) {
         numberOfPits -= 1
         oilCreator(i, j)
       }
