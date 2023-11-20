@@ -44,7 +44,7 @@ function wallEditor(x1,y1,x2,y2,bool) {
 class KeyboardHandler {
   pressedKeys = []
   constructor() {
-    window.addEventListener("keydown", event => this.pressedKeys.push(event.code))
+    window.addEventListener("keydown", event => {if (!this.getKeys(event.code)) {this.pressedKeys.push(event.code)}})
     window.addEventListener("keyup", event => this.pressedKeys.splice(this.pressedKeys.indexOf(event.code), 1))
   }
   getKeys(param) {
@@ -70,7 +70,7 @@ class Entity {
     this.abilityCooldown = 0
   }
   turn() {
-    this.movementHanlder()
+    this.movementHandler()
     //due to corner collisions being hard,collision handler also moves if needed and no collisions detected
     this.collissionHandler()
     
@@ -110,13 +110,55 @@ class Entity {
   }
 }
 
+class Monster extends Entity {
+  constructor(x, y) {
+    super(x, y)
+    this.speed = 10
+  }
+  movementHandler() {
+    this.canMoveUp = true
+    this.canMoveDown = true
+    this.canMoveLeft = true
+    this.canMoveRight = true
+    this.shouldMoveRight = false;
+    this.shouldMoveLeft = false;
+    this.shouldMoveUp = false;
+    this.shouldMoveDown = false;
+    if (this.movementCooldown == 0) {
+      if (keyboardHandler.getKeys("KeyA")) {
+        this.shouldMoveLeft = true;
+      } else {
+        this.shouldMoveLeft = false;
+      }
+      if (keyboardHandler.getKeys("KeyD")) {
+        this.shouldMoveRight = true;
+      } else {
+        this.shouldMoveRight = false;
+      }
+      if (keyboardHandler.getKeys("KeyS")) {
+        this.shouldMoveDown = true;
+      } else {
+        this.shouldMoveDown = false;
+      }
+      if (keyboardHandler.getKeys("KeyW")) {
+        this.shouldMoveUp = true;
+      } else {
+        this.shouldMoveUp = false;
+      }
+      this.movementCooldown = Math.floor(10 * Math.pow(0.95, this.lanterFuel))
+    } else {
+      this.movementCooldown -= 1
+    }
+  }
+}
+
 class Player extends Entity {
   constructor(x, y) {
     super(x, y)
     this.lanterFuel = 20
     this.health = 30
   }
-  movementHanlder() {
+  movementHandler() {
     this.canMoveUp = true
     this.canMoveDown = true
     this.canMoveLeft = true
@@ -156,7 +198,7 @@ class Player extends Entity {
       this.lanterFuel += .01
       this.health += 0.01
     } else {
-      this.lanterFuel -= .01
+      this.lanterFuel -= .009
     }
     if (this.lanterFuel < 3.5) {
       this.lanterFuel = 4
@@ -236,7 +278,7 @@ function drawMap() {
   
   //console update
   console = ""
-  console = console + "Health: " + Math.floor(player.health) + "/30"
+  console = console + "Health: " + Math.floor(player.health) + "/30 "
   console = console + "Time Spent: " + Math.floor((new Date() - startTime) / 1000)
   document.getElementById("console").textContent = console
   for (let i = 0; i < keyboardHandler.pressedKeys.length; i++) {console = console + keyboardHandler.pressedKeys[i]}
