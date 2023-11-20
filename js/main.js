@@ -160,7 +160,7 @@ class Monster extends Entity {
       } else if (this.y - 1 == player.y && this.x == player.x) {
         player.health -= 1
       }
-      this.movementCooldown += 8.5
+      this.movementCooldown += 9
     } else {
       this.movementCooldown -= 1
     }
@@ -225,6 +225,7 @@ class Player extends Entity {
       if (!oilPits[this.y][this.x] && Math.floor((new Date() - startTime) / 1000) % 10 == 0) {
         monster.x = this.x
         monster.y = this.y
+        monster.movementCooldown = 20
       }
     } else if (this.lanterFuel > 20) {
       this.lanterFuel = 20
