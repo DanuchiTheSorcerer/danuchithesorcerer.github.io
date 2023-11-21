@@ -1,7 +1,13 @@
 let difficulty = "Medium"
 
 function goToMain() {
-    window.location = "main.html"
+    if (difficulty == "Easy") {
+        window.location = "easy.html"
+    } else if (difficulty == "Medium") {
+        window.location = "medium.html"
+    } else if (difficulty == "Hard") {
+        window.location = "hard.html"
+    }
 }
 
 function changeDifficulty() {
