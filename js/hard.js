@@ -160,7 +160,7 @@ class Monster extends Entity {
       } else if (this.y - 1 == player.y && this.x == player.x) {
         player.health -= 1
       }
-      this.movementCooldown += 9
+      this.movementCooldown += 8
     } else {
       this.movementCooldown -= 1
     }
@@ -175,7 +175,7 @@ const monster = new Monster(112, 36)
 class Player extends Entity {
   constructor(x, y) {
     super(x, y)
-    this.lanterFuel = 20
+    this.lanterFuel = 15
     this.health = 10
   }
   movementHandler() {
@@ -218,7 +218,7 @@ class Player extends Entity {
       this.lanterFuel += .01
       this.health += 0.01
     } else {
-      this.lanterFuel -= .005
+      this.lanterFuel -= .01
     }
     if (this.lanterFuel < 3.5) {
       this.lanterFuel = 4
@@ -227,8 +227,8 @@ class Player extends Entity {
         monster.y = this.y
         monster.movementCooldown = 20
       }
-    } else if (this.lanterFuel > 20) {
-      this.lanterFuel = 20
+    } else if (this.lanterFuel > 15) {
+      this.lanterFuel = 15
     }
     if (this.health < 0 && !gameEnded) {
       
@@ -376,7 +376,7 @@ function randomGeneration() {
     }
   }
   chatMessageAdder("Maze Randomly Generated!")
-  let numberOfPits = 5
+  let numberOfPits = 3
   for (let i = 0;i < 25; i++) {
     for (let j = 0;j < 8;j++) {
       if (Math.floor(Math.random() * ((200 -(i * 9 + j + 1)) / numberOfPits)) == 0) {
