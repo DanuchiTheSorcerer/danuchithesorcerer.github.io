@@ -239,11 +239,11 @@ class Player extends Entity {
       this.health = 10
     }
     if (this.health > 7) {
-      document.getElementById("body").style.backgroundColor = "#682ca8"
-    } else if (this.health <= 6 && this.health > 3) {
-      document.getElementById("body").style.backgroundColor = "#3f146e"
+      document.getElementById("body").style.backgroundColor = "#b4560e"
+    } else if (this.health <= 7 && this.health > 3) {
+      document.getElementById("body").style.backgroundColor = "#8c3f04"
     } else {
-      document.getElementById("body").style.backgroundColor = "#280b47"
+      document.getElementById("body").style.backgroundColor = "#691a00"
     }
     if (player.x > 216 && player.y > 63 && !gameEnded) {
       alert("You completed the maze in " + Math.floor((new Date() - startTime) / 1000) + " seconds!")
