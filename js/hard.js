@@ -176,7 +176,7 @@ class Player extends Entity {
   constructor(x, y) {
     super(x, y)
     this.lanterFuel = 15
-    this.health = 10
+    this.health = 1
   }
   movementHandler() {
     this.canMoveUp = true
@@ -235,8 +235,8 @@ class Player extends Entity {
       window.location = "title.html"
       alert("YOU DIED L")
       gameEnded = true
-    } else if (this.health > 10) {
-      this.health = 10
+    } else if (this.health > 1) {
+      this.health = 1
     }
     if (this.health > 7) {
       document.getElementById("body").style.backgroundColor = "#b4560e"
@@ -306,7 +306,7 @@ function drawMap() {
   
   //console update
   console = ""
-  console = console + "Health: " + Math.floor(player.health) + "/10 "
+  console = console + "Health: " + Math.floor(player.health) + "/1"
   console = console + "Time Spent: " + Math.floor((new Date() - startTime) / 1000)
   document.getElementById("console").textContent = console
   for (let i = 0; i < keyboardHandler.pressedKeys.length; i++) {console = console + keyboardHandler.pressedKeys[i]}
