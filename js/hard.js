@@ -230,7 +230,7 @@ class Player extends Entity {
     } else if (this.lanterFuel > 15) {
       this.lanterFuel = 15
     }
-    if (this.health < 0 && !gameEnded) {
+    if (this.health < 1 && !gameEnded) {
       
       window.location = "title.html"
       alert("YOU DIED L")
