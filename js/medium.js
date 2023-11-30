@@ -130,8 +130,6 @@ class Monster extends Entity {
         } else {
           this.shouldMoveLeft = false;
         }
-      } else if (this.y - 1 == player.y && this.x == player.x)  {
-        player.health -= 1
       }
       if (!(this.x + 1 == player.x && this.y == player.y) && !oilPits[this.y][this.x + 1]) {
         if (this.x < player.x) {
@@ -139,8 +137,6 @@ class Monster extends Entity {
         } else {
           this.shouldMoveRight = false;
         }
-      } else if (this.y - 1 == player.y && this.x == player.x)  {
-        player.health -= 1
       }
       if (!(this.y + 1 == player.y && this.x == player.x) && !oilPits[this.y + 1][this.x]) {
         if (this.y < player.y) {
@@ -148,8 +144,6 @@ class Monster extends Entity {
         } else {
           this.shouldMoveDown = false;
         }
-      } else if (this.y - 1 == player.y && this.x == player.x) {
-        player.health -= 1
       }
       if (!(this.y - 1 == player.y && this.x == player.x) && !oilPits[this.y - 1][this.x]) {
         if (this.y > player.y) {
@@ -157,8 +151,6 @@ class Monster extends Entity {
         } else {
           this.shouldMoveUp = false;
         }
-      } else if (this.y - 1 == player.y && this.x == player.x) {
-        player.health -= 1
       }
       this.movementCooldown += 9
     } else {
@@ -166,7 +158,9 @@ class Monster extends Entity {
     }
   }
   abilityHandler() {
-
+    if (Math.sqrt(Math.pow((player.x - this.x),2) + Math.pow((player.y - this.y),2)) <= 1) {
+      player.health -= 1
+    }
   }
 }
 
@@ -215,10 +209,11 @@ class Player extends Entity {
   }
   abilityHandler() {
     if (oilPits[this.y][this.x]) {
-      this.lanterFuel += .01
-      this.health += 0.01
+      this.lanterFuel += 0.15
+      this.health += 0.5
+      oilPits[this.y][this.x] = false
     } else {
-      this.lanterFuel -= .005
+      this.lanterFuel -= .01
     }
     if (this.lanterFuel < 3.5) {
       this.lanterFuel = 4
@@ -227,8 +222,8 @@ class Player extends Entity {
         monster.y = this.y
         monster.movementCooldown = 20
       }
-    } else if (this.lanterFuel > 20) {
-      this.lanterFuel = 20
+    } else if (this.lanterFuel > 30) {
+      this.lanterFuel = 30
     }
     if (this.health < 1 && !gameEnded) {
       
@@ -376,7 +371,7 @@ function randomGeneration() {
     }
   }
   chatMessageAdder("Maze Randomly Generated!")
-  let numberOfPits = 5
+  let numberOfPits = 10
   for (let i = 0;i < 25; i++) {
     for (let j = 0;j < 8;j++) {
       if (Math.floor(Math.random() * ((200 -(i * 9 + j + 1)) / numberOfPits)) == 0) {
