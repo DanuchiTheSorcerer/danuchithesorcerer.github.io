@@ -152,13 +152,13 @@ class Monster extends Entity {
           this.shouldMoveUp = false;
         }
       }
-      this.movementCooldown += 8
+      this.movementCooldown += 9
     } else {
       this.movementCooldown -= 1
     }
   }
   abilityHandler() {
-    if (Math.sqrt(Math.pow((player.x - this.x),2) + Math.pow((player.y - this.y),2)) <= 1) {
+    if (Math.sqrt(Math.pow((player.x - this.x),2) + Math.pow((player.y - this.y),2)) <= 1 && this.movementCooldown == 1) {
       player.health -= 1
     }
   }
@@ -209,11 +209,11 @@ class Player extends Entity {
   }
   abilityHandler() {
     if (oilPits[this.y][this.x]) {
-      this.lanterFuel += 0.15
+      this.lanterFuel += 0.2
       this.health += 0.5
       oilPits[this.y][this.x] = false
     } else {
-      this.lanterFuel -= .01
+      this.lanterFuel -= .005
     }
     if (this.lanterFuel < 3.5) {
       this.lanterFuel = 4
@@ -222,14 +222,17 @@ class Player extends Entity {
         monster.y = this.y
         monster.movementCooldown = 20
       }
-    } else if (this.lanterFuel > 25) {
-      this.lanterFuel = 25
+    } else if (this.lanterFuel > 20) {
+      this.lanterFuel = 20
     }
     if (this.health < 1 && !gameEnded) {
       
       window.location = "title.html"
       alert("YOU DIED L")
       gameEnded = true
+    }
+    if (this.health > 1) {
+      this.health = 1
     }
     if (this.health > 7) {
       document.getElementById("body").style.backgroundColor = "#b4560e"
@@ -369,7 +372,7 @@ function randomGeneration() {
     }
   }
   chatMessageAdder("Maze Randomly Generated!")
-  let numberOfPits = 8
+  let numberOfPits = 4
   for (let i = 0;i < 25; i++) {
     for (let j = 0;j < 8;j++) {
       if (Math.floor(Math.random() * ((200 -(i * 9 + j + 1)) / numberOfPits)) == 0) {

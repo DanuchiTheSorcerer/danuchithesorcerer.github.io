@@ -158,7 +158,7 @@ class Monster extends Entity {
     }
   }
   abilityHandler() {
-    if (Math.sqrt(Math.pow((player.x - this.x),2) + Math.pow((player.y - this.y),2)) <= 1) {
+    if (Math.sqrt(Math.pow((player.x - this.x),2) + Math.pow((player.y - this.y),2)) <= 1 && this.movementCooldown == 1) {
       player.health -= 1
     }
   }
@@ -209,11 +209,11 @@ class Player extends Entity {
   }
   abilityHandler() {
     if (oilPits[this.y][this.x]) {
-      this.lanterFuel += .2
-      this.health += 0.2
+      this.lanterFuel += 0.35
+      this.health += 0.5
       oilPits[this.y][this.x] = false
     } else {
-      this.lanterFuel -= .01
+      this.lanterFuel -= .003
     }
     if (this.lanterFuel < 3.5) {
       this.lanterFuel = 4
@@ -222,8 +222,8 @@ class Player extends Entity {
         monster.y = this.y
         monster.movementCooldown = 20
       }
-    } else if (this.lanterFuel > 30) {
-      this.lanterFuel = 30
+    } else if (this.lanterFuel > 25) {
+      this.lanterFuel = 25
     }
     if (this.health < 1 && !gameEnded) {
       
@@ -371,7 +371,7 @@ function randomGeneration() {
     }
   }
   chatMessageAdder("Maze Randomly Generated!")
-  let numberOfPits = 18
+  let numberOfPits = 8
   for (let i = 0;i < 25; i++) {
     for (let j = 0;j < 8;j++) {
       if (Math.floor(Math.random() * ((200 -(i * 9 + j + 1)) / numberOfPits)) == 0) {
